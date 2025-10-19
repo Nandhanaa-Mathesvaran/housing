@@ -36,11 +36,7 @@ for col in cols_to_log:
 
 input_encoded = pd.get_dummies(input_data, columns=['ocean_proximity'], drop_first=True)
 
-train_columns = [
-    'longitude','latitude','housing_median_age','total_rooms','total_bedrooms',
-    'population','households','median_income',
-    'ocean_proximity_INLAND','ocean_proximity_ISLAND','ocean_proximity_NEAR OCEAN','ocean_proximity_NEAR BAY'
-]
+train_columns = model.get_booster().feature_names
 input_encoded = input_encoded.reindex(columns=train_columns, fill_value=0)
 
 if st.button("Predict"):
