@@ -30,9 +30,14 @@ input_data = pd.DataFrame({
     'ocean_proximity':[ocean_proximity]
 })
 
+# Apply log transformation to match training
+cols_to_log = ['total_rooms','total_bedrooms','population','households','median_income']
+for col in cols_to_log:
+    input_data[col] = np.log1p(input_data[col])
+
 input_encoded = pd.get_dummies(input_data, drop_first=True)
 
-
+# Ensure all columns match training
 all_columns = ['longitude','latitude','housing_median_age','total_rooms','total_bedrooms',
                'population','households','median_income',
                'ocean_proximity_INLAND','ocean_proximity_ISLAND','ocean_proximity_NEAR BAY','ocean_proximity_NEAR OCEAN']
