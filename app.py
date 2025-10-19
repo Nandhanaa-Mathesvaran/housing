@@ -16,7 +16,7 @@ total_bedrooms = st.number_input("Total Bedrooms", 1, 10000, 400)
 population = st.number_input("Population", 1, 50000, 1500)
 households = st.number_input("Households", 1, 10000, 500)
 median_income = st.number_input("Median Income (×10,000)", 0.0, 15.0, 3.5)
-ocean_proximity = st.selectbox("Ocean Proximity", ["<1H OCEAN","INLAND","ISLAND","NEAR BAY","NEAR OCEAN"])
+ocean_proximity = st.selectbox("Ocean Proximity", ["<1H OCEAN","INLAND","ISLAND","NEAR OCEAN","NEAR BAY"])
 
 input_data = pd.DataFrame({
     'longitude':[longitude],
@@ -30,18 +30,18 @@ input_data = pd.DataFrame({
     'ocean_proximity':[ocean_proximity]
 })
 
-# Apply log transformation to match training
 cols_to_log = ['total_rooms','total_bedrooms','population','households','median_income']
 for col in cols_to_log:
     input_data[col] = np.log1p(input_data[col])
 
-input_encoded = pd.get_dummies(input_data, drop_first=True)
+input_encoded = pd.get_dummies(input_data, columns=['ocean_proximity'], drop_first=True)
 
-# Ensure all columns match training
-all_columns = ['longitude','latitude','housing_median_age','total_rooms','total_bedrooms',
-               'population','households','median_income',
-               'ocean_proximity_INLAND','ocean_proximity_ISLAND','ocean_proximity_NEAR BAY','ocean_proximity_NEAR OCEAN']
-input_encoded = input_encoded.reindex(columns=all_columns, fill_value=0)
+train_columns = [
+    'longitude','latitude','housing_median_age','total_rooms','total_bedrooms',
+    'population','households','median_income',
+    'ocean_proximity_INLAND','ocean_proximity_ISLAND','ocean_proximity_NEAR OCEAN','ocean_proximity_NEAR BAY'
+]
+input_encoded = input_encoded.reindex(columns=train_columns, fill_value=0)
 
 if st.button("Predict"):
     prediction = model.predict(input_encoded)[0]
