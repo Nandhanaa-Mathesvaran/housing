@@ -1,46 +1,43 @@
 import streamlit as st
-import pickle
-import numpy as np
 import pandas as pd
+import numpy as np
+import pickle
 
-with open('xgb_house_model.pkl', 'rb') as file:
-    model = pickle.load(file)
+model = pickle.load(open("xgb_house_model.pkl", "rb"))
 
 st.title("California Housing Price Prediction App")
-st.write("Enter details below to predict the median house value:")
+st.write("Enter the details below to predict the median house value")
 
-longitude = st.number_input("Longitude", value=-120.0)
-latitude = st.number_input("Latitude", value=35.0)
-housing_median_age = st.number_input("Housing Median Age", min_value=1, max_value=60, value=20)
-households = st.number_input("Number of Households", min_value=1, value=500)
-median_income = st.number_input("Median Income", min_value=0.0, value=3.5)
-rooms_per_household = st.number_input("Rooms per Household", min_value=1.0, value=5.0)
-bedrooms_per_room = st.number_input("Bedrooms per Room", min_value=0.1, value=0.2)
-population_per_household = st.number_input("Population per Household", min_value=1.0, value=3.0)
-ocean_proximity = st.selectbox("Ocean Proximity", ["<1H OCEAN", "INLAND", "NEAR OCEAN", "NEAR BAY", "ISLAND"])
+longitude = st.number_input("Longitude", -125.0, -114.0, -120.0)
+latitude = st.number_input("Latitude", 32.0, 42.0, 35.0)
+housing_median_age = st.number_input("Housing Median Age", 1, 60, 20)
+total_rooms = st.number_input("Total Rooms", 1, 50000, 2000)
+total_bedrooms = st.number_input("Total Bedrooms", 1, 10000, 400)
+population = st.number_input("Population", 1, 50000, 1500)
+households = st.number_input("Households", 1, 10000, 500)
+median_income = st.number_input("Median Income (×10,000)", 0.0, 15.0, 3.5)
+ocean_proximity = st.selectbox("Ocean Proximity", ["<1H OCEAN","INLAND","ISLAND","NEAR BAY","NEAR OCEAN"])
 
 input_data = pd.DataFrame({
-    'longitude': [longitude],
-    'latitude': [latitude],
-    'housing_median_age': [housing_median_age],
-    'households': [households],
-    'median_income': [median_income],
-    'rooms_per_household': [rooms_per_household],
-    'bedrooms_per_room': [bedrooms_per_room],
-    'population_per_household': [population_per_household],
-    'ocean_proximity': [ocean_proximity]
+    'longitude':[longitude],
+    'latitude':[latitude],
+    'housing_median_age':[housing_median_age],
+    'total_rooms':[total_rooms],
+    'total_bedrooms':[total_bedrooms],
+    'population':[population],
+    'households':[households],
+    'median_income':[median_income],
+    'ocean_proximity':[ocean_proximity]
 })
 
-input_data = pd.get_dummies(input_data, drop_first=True)
-
-model_features = model.get_booster().feature_names
-for col in model_features:
-    if col not in input_data.columns:
-        input_data[col] = 0
-
-input_data = input_data[model_features]
+input_encoded = pd.get_dummies(input_data, drop_first=True)
 
 
-if st.button("Predict House Price"):
-    prediction = model.predict(input_data)[0]
-    st.success(f" Predicted Median House Value: ${prediction:,.2f}")
+all_columns = ['longitude','latitude','housing_median_age','total_rooms','total_bedrooms',
+               'population','households','median_income',
+               'ocean_proximity_INLAND','ocean_proximity_ISLAND','ocean_proximity_NEAR BAY','ocean_proximity_NEAR OCEAN']
+input_encoded = input_encoded.reindex(columns=all_columns, fill_value=0)
+
+if st.button("Predict"):
+    prediction = model.predict(input_encoded)[0]
+    st.write(f"Predicted Median House Value: ${prediction:,.2f}")
